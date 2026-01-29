@@ -1,4 +1,3 @@
-cat > .github/workflows/deploy-qa.yml << 'EOF'
 name: Deploy Production to GitHub Pages
 
 on:
