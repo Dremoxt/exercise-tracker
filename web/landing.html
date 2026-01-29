@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Move Now - Build a Habit to Move Every Day</title>
+  <meta name="description" content="Simple exercise tracking app to build daily movement habits. Track 8 exercise categories, set weekly goals, and sync across devices.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Russo+One&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      padding-top: 20px;
+    }
+    
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 150px;
+      height: 150px;
+      background: #1e3a5f;
+      border-radius: 32px;
+      margin-bottom: 28px;
+      box-shadow: 0 20px 50px rgba(30, 58, 95, 0.4);
+    }
+    
+    .logo-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .logo-move, .logo-now {
+      font-size: 34px;
+      font-weight: 800;
+      color: white;
+      font-family: 'Russo One', sans-serif;
+      line-height: 1;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    
+    .logo-line {
+      width: 70px;
+      height: 4px;
+      background: #e63946;
+      border-radius: 2px;
+    }
+    
+    h1 {
+      font-size: 52px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: #1e293b;
+    }
+    
+    h1 span {
+      color: #1e3a5f;
+    }
+    
+    .tagline {
+      font-size: 22px;
+      color: #64748b;
+      margin-bottom: 36px;
+      font-weight: 500;
+    }
+    
+    .cta-button {
+      display: inline-block;
+      padding: 18px 48px;
+      background: #1e3a5f;
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 14px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 10px 30px rgba(30, 58, 95, 0.3);
+    }
+    
+    .cta-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(30, 58, 95, 0.4);
+    }
+    
+    /* Sections */
+    .section {
+      margin-bottom: 60px;
+    }
+    
+    .section-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #1e293b;
+      text-align: center;
+    }
+    
+    /* Philosophy Card */
+    .philosophy-card {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e2e8f0;
+    }
+    
+    .philosophy-card p {
+      font-size: 18px;
+      color: #475569;
+      margin-bottom: 20px;
+      line-height: 1.8;
+    }
+    
+    .philosophy-card p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .highlight {
+      color: #1e3a5f;
+      font-weight: 600;
+    }
+    
+    .highlight-red {
+      color: #e63946;
+      font-weight: 600;
+    }
+    
+    /* How It Works */
+    .steps {
+      display: grid;
+      gap: 20px;
+    }
+    
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e2e8f0;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .step:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      background: #1e3a5f;
+      border-radius: 16px;
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    
+    .step-content h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1e293b;
+    }
+    
+    .step-content p {
+      color: #64748b;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    
+    /* Features Grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .features {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 500px) {
+      .features {
+        grid-template-columns: 1fr;
+      }
+      
+      h1 {
+        font-size: 36px;
+      }
+      
+      .tagline {
+        font-size: 18px;
+      }
+      
+      .logo {
+        width: 110px;
+        height: 110px;
+      }
+      
+      .logo-move, .logo-now {
+        font-size: 24px;
+      }
+      
+      .logo-line {
+        width: 50px;
+      }
+    }
+    
+    .feature {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e2e8f0;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .feature:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+      font-size: 40px;
+      margin-bottom: 16px;
+    }
+    
+    .feature h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1e293b;
+    }
+    
+    .feature p {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    
+    /* Categories */
+    .categories-container {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e2e8f0;
+    }
+    
+    .categories-subtitle {
+      color: #64748b;
+      margin-bottom: 24px;
+      text-align: center;
+      font-size: 16px;
+    }
+    
+    .categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+    }
+    
+    .category-tag {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(30, 58, 95, 0.1);
+      border: 1px solid rgba(30, 58, 95, 0.2);
+      border-radius: 50px;
+      padding: 12px 22px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #1e3a5f;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .category-tag:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(30, 58, 95, 0.2);
+    }
+    
+    /* CTA Section */
+    .cta-section {
+      text-align: center;
+      background: #1e3a5f;
+      border-radius: 28px;
+      padding: 60px 40px;
+      color: white;
+      box-shadow: 0 20px 50px rgba(30, 58, 95, 0.3);
+    }
+    
+    .cta-section h2 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .cta-section p {
+      font-size: 18px;
+      margin-bottom: 28px;
+      opacity: 0.9;
+    }
+    
+    .cta-button-white {
+      display: inline-block;
+      padding: 18px 48px;
+      background: white;
+      color: #1e3a5f;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 14px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .cta-button-white:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding-top: 50px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-content">
+          <span class="logo-move">Move</span>
+          <div class="logo-line"></div>
+          <span class="logo-now">Now</span>
+        </div>
+      </div>
+      <h1><span>Move Now</span></h1>
+      <p class="tagline">Build a habit to move every day</p>
+      <a href="index.html" class="cta-button">Open App →</a>
+    </header>
+    
+    <!-- Philosophy -->
+    <section class="section">
+      <h2 class="section-title">The Philosophy</h2>
+      <div class="philosophy-card">
+        <p>
+          <span class="highlight">Movement is medicine.</span> But going to the gym every day isn't realistic for most people. Life gets busy. Schedules change. Energy fluctuates.
+        </p>
+        <p>
+          Move Now is built on a simple idea: <span class="highlight-red">consistency beats intensity</span>. Instead of crushing yourself 3 times a week, do a little bit every day. 8 categories, a few sets each — that's it.
+        </p>
+        <p>
+          Set different goals for different days. Take rest days when you need them. The app adapts to your life, not the other way around.
+        </p>
+      </div>
+    </section>
+    
+    <!-- How It Works -->
+    <section class="section">
+      <h2 class="section-title">How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Choose Your Categories</h3>
+            <p>Pick 8 exercise types that matter to you — upper body, core, cardio, stretching, whatever fits your goals.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Set Weekly Goals</h3>
+            <p>Configure different targets for each day. More sets on weekends? Rest on Wednesdays? You decide.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Tap to Track</h3>
+            <p>Complete a set? Tap the category. Watch your progress fill up. Simple, satisfying, effective.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>Build the Streak</h3>
+            <p>Track your weekly and monthly averages. See your consistency grow. Rest days don't count against you.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Features -->
+    <section class="section">
+      <h2 class="section-title">Features</h2>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">📱</div>
+          <h3>Works Offline</h3>
+          <p>Install on your phone. No internet needed to track.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">☁️</div>
+          <h3>Cloud Sync</h3>
+          <p>Sign in with Google. Access from any device.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📅</div>
+          <h3>Flexible Goals</h3>
+          <p>Different targets for each weekday. Rest days built in.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📊</div>
+          <h3>Progress Stats</h3>
+          <p>Weekly and monthly averages. Category breakdowns.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎨</div>
+          <h3>Clean Design</h3>
+          <p>No clutter. Just tap and track. Dark mode included.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🆓</div>
+          <h3>100% Free</h3>
+          <p>No subscriptions. No ads. No hidden costs.</p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Default Categories -->
+    <section class="section">
+      <h2 class="section-title">Default Categories</h2>
+      <div class="categories-container">
+        <p class="categories-subtitle">Customize these to fit your routine</p>
+        <div class="categories">
+          <div class="category-tag">💪 Push-ups</div>
+          <div class="category-tag">🏋️ Pull-ups</div>
+          <div class="category-tag">🦵 Squats</div>
+          <div class="category-tag">🧘 Plank</div>
+          <div class="category-tag">🏃 Cardio</div>
+          <div class="category-tag">🤸 Stretching</div>
+          <div class="category-tag">🏊 Swimming</div>
+          <div class="category-tag">🚴 Cycling</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- CTA -->
+    <section class="section">
+      <div class="cta-section">
+        <h2>Ready to Move?</h2>
+        <p>Start building your movement habit today.</p>
+        <a href="index.html" class="cta-button-white">Open Move Now →</a>
+      </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Move Now — Build a habit to move every day</p>
+    </footer>
+  </div>
+</body>
+</html>

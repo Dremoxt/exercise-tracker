@@ -1,0 +1,60 @@
+name: Deploy QA to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build QA web
+        run: flutter build web --release --dart-define=ENV=qa --base-href="/exercise-tracker-qa/"
+
+      - name: Setup landing page
+        run: |
+          # Rename Flutter's index.html to app.html
+          mv build/web/index.html build/web/app.html
+          # Use landing.html as the main index
+          cp web/landing.html build/web/index.html
+          # Update the CTA button link in landing page to point to app.html
+          sed -i 's|href="index.html"|href="app.html"|g' build/web/index.html
+          sed -i 's|href="./"|href="app.html"|g' build/web/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

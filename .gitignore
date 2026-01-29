@@ -1,0 +1,41 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+*.pem
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# Security - NEVER commit these files
+.env
+.env.qa
+.env.prod
+.env.local
+*.env
+firebase_options.dart
+google-services.json
+GoogleService-Info.plist
+**/firebase_config_dev.dart
+**/firebase_config_prod.dart
+secrets/
+credentials/
+
+# Build artifacts
+*.js.map
+*.dSYM.zip
+*.dSYM
+
+# Logs
+*.log
