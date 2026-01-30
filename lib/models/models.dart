@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 
 part 'models.g.dart';
 
@@ -282,6 +283,6 @@ class MonthlySummary {
   });
 
   String get monthName {
-    return DateTime(year, month).toString();
+    return DateFormat('MMMM yyyy').format(DateTime(year, month));
   }
 }
