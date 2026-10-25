@@ -180,21 +180,10 @@ class CategoryCard extends StatelessWidget {
   Color _getProgressColor(double progress, bool isComplete, ThemeData theme) {
     if (progress == 0) return theme.colorScheme.surface;
 
-    final percentage = progress * 100;
-
-    // 100% - Green
-    if (isComplete) return const Color(0xFF22C55E).withOpacity(0.45);
-
-    // 75-99% - Yellow
-    if (percentage >= 75) return const Color(0xFFEAB308).withOpacity(0.8);
-
-    // 51-74% - Amber
-    if (percentage >= 51) return const Color(0xFFF59E0B).withOpacity(0.8);
-
-    // 26-50% - Orange
-    if (percentage >= 26) return const Color(0xFFF97316).withOpacity(0.8);
-
-    // 0-25% - Red
-    return const Color(0xFFEF4444).withOpacity(0.8);
+    // Grade on the 11-point NPS-style scale (0 red → 10 green).
+    // Completed days use the top (green) tier with a softer fill.
+    final percentage = isComplete ? 100.0 : progress * 100;
+    final opacity = isComplete ? 0.45 : 0.8;
+    return AppTheme.getProgressColor(percentage).withOpacity(opacity);
   }
 }

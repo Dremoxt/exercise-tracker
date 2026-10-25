@@ -301,44 +301,64 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ),
         
-        // Legend
+        // Legend - 11-point NPS-style scale (0 red → 10 green)
         Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildLegendItem(context, '0%', Colors.grey.shade200),
-              _buildLegendItem(context, '25%', AppTheme.getProgressColor(25)),
-              _buildLegendItem(context, '50%', AppTheme.getProgressColor(50)),
-              _buildLegendItem(context, '75%', AppTheme.getProgressColor(75)),
-              _buildLegendItem(context, '100%', AppTheme.getProgressColor(100)),
-            ],
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: _buildLegend(context),
         ),
       ],
     );
   }
 
-  Widget _buildLegendItem(BuildContext context, String label, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        children: [
-          Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(4),
+  Widget _buildLegend(BuildContext context) {
+    final labelStyle =
+        Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 10);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text('No activity', style: labelStyle),
+            const Spacer(),
+            Text('Score 0–10', style: labelStyle),
+          ],
+        ),
+        const SizedBox(height: 6),
+        // Continuous gradient bar across all 11 tiers.
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Row(
+            children: List.generate(
+              AppTheme.progressScoreMax + 1,
+              (score) => Expanded(
+                child: Container(
+                  height: 12,
+                  color: AppTheme.colorForProgressScore(score),
+                ),
+              ),
             ),
           ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 10),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('<10%', style: labelStyle),
+            Text('50%', style: labelStyle),
+            Text('100%', style: labelStyle),
+          ],
+        ),
+      ],
     );
   }
 

@@ -189,13 +189,31 @@ class AppTheme {
     ),
   );
 
-  // Helper to get progress color based on percentage (5-tier system)
+  // Progress is graded on an 11-point NPS-style scale (0–10),
+  // where 0 is red and 10 is green.
+  static const int progressScoreMax = 10;
+
+  // Maps an achievement percentage to an 11-point score (0–10):
+  // 0 = below 10%, 1 = 10–20%, 2 = 20–30%, ... 9 = 90–100%,
+  // 10 = exactly 100%.
+  static int getProgressScore(double percentage) {
+    if (percentage >= 100) return progressScoreMax;
+    if (percentage < 10) return 0;
+    return (percentage ~/ 10).clamp(0, progressScoreMax - 1).toInt();
+  }
+
+  // Color for a given 0–10 progress score, interpolated across the
+  // red → green hue range (0 = red, 5 = yellow, 10 = green).
+  static Color colorForProgressScore(int score) {
+    final clamped = score.clamp(0, progressScoreMax);
+    final hue = (clamped / progressScoreMax) * 120.0; // 0 red -> 120 green
+    return HSLColor.fromAHSL(1.0, hue, 0.72, 0.47).toColor();
+  }
+
+  // Helper to get progress color based on percentage using the
+  // 11-point NPS-style scale (0 red → 10 green).
   static Color getProgressColor(double percentage) {
-    if (percentage >= 100) return const Color(0xFF22C55E); // Green
-    if (percentage >= 75) return const Color(0xFFEAB308);  // Yellow
-    if (percentage >= 51) return const Color(0xFFF59E0B); // Amber
-    if (percentage >= 26) return const Color(0xFFF97316); // Orange
-    return const Color(0xFFEF4444); // Red
+    return colorForProgressScore(getProgressScore(percentage));
   }
 
   // Category icon mapping
