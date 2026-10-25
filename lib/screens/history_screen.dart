@@ -301,17 +301,54 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ),
         
-        // Legend
+        // Legend - Gradient bar with 11-point scale
         Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
             children: [
-              _buildLegendItem(context, '0%', Colors.grey.shade200),
-              _buildLegendItem(context, '25%', AppTheme.getProgressColor(25)),
-              _buildLegendItem(context, '50%', AppTheme.getProgressColor(50)),
-              _buildLegendItem(context, '75%', AppTheme.getProgressColor(75)),
-              _buildLegendItem(context, '100%', AppTheme.getProgressColor(100)),
+              // Gradient bar
+              Container(
+                height: 24,
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: List.generate(11, (i) {
+                      // Generate colors for scores 0-10
+                      final percentage = i * 10.0;
+                      return AppTheme.getProgressColor(percentage);
+                    }),
+                    stops: List.generate(11, (i) => i / 10.0),
+                  ),
+                  border: Border.all(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.grey.shade300
+                        : Colors.grey.shade700,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Labels
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '<10%',
+                      style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
+                    ),
+                    Text(
+                      '50%',
+                      style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
+                    ),
+                    Text(
+                      '100%',
+                      style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -319,28 +356,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildLegendItem(BuildContext context, String label, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        children: [
-          Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 10),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Color _getDayColor(double percentage) {
     if (percentage == 0) return Colors.grey.shade200;

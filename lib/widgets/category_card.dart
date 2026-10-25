@@ -177,24 +177,15 @@ class CategoryCard extends StatelessWidget {
     );
   }
 
-  Color _getProgressColor(double progress, bool isComplete, ThemeData theme) {
+    Color _getProgressColor(double progress, bool isComplete, ThemeData theme) {
     if (progress == 0) return theme.colorScheme.surface;
 
     final percentage = progress * 100;
-
-    // 100% - Green
-    if (isComplete) return const Color(0xFF22C55E).withOpacity(0.45);
-
-    // 75-99% - Yellow
-    if (percentage >= 75) return const Color(0xFFEAB308).withOpacity(0.8);
-
-    // 51-74% - Amber
-    if (percentage >= 51) return const Color(0xFFF59E0B).withOpacity(0.8);
-
-    // 26-50% - Orange
-    if (percentage >= 26) return const Color(0xFFF97316).withOpacity(0.8);
-
-    // 0-25% - Red
-    return const Color(0xFFEF4444).withOpacity(0.8);
+    
+    // Use the centralized gradient color system
+    final baseColor = AppTheme.getProgressColor(percentage);
+    
+    // Apply opacity for card background (0.45 for complete, 0.8 for in-progress)
+    return baseColor.withOpacity(isComplete ? 0.45 : 0.8);
   }
 }

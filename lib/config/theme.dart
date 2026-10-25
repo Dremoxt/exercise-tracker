@@ -189,13 +189,41 @@ class AppTheme {
     ),
   );
 
-  // Helper to get progress color based on percentage (5-tier system)
+    // Helper to get progress color based on percentage (11-point NPS-style gradient)
+  // Score 0-10 where each 10% = one score point, smooth red→yellow→green gradient
+  // Score 10 (exactly 100%) = full green, Score 0 (below 10%) = red
   static Color getProgressColor(double percentage) {
-    if (percentage >= 100) return const Color(0xFF22C55E); // Green
-    if (percentage >= 75) return const Color(0xFFEAB308);  // Yellow
-    if (percentage >= 51) return const Color(0xFFF59E0B); // Amber
-    if (percentage >= 26) return const Color(0xFFF97316); // Orange
-    return const Color(0xFFEF4444); // Red
+    // Clamp percentage between 0 and 100
+    percentage = percentage.clamp(0.0, 100.0);
+    
+    // Score 10 is reserved for exactly 100%
+    if (percentage == 100.0) {
+      return const Color(0xFF22C55E); // Full green - exactly 100%
+    }
+    
+    // Calculate score (0-9 for 0-99.99%)
+    // Score 0: 0-9.99%, Score 1: 10-19.99%, ..., Score 9: 90-99.99%
+    final score = (percentage / 10).floor().clamp(0, 9);
+    
+    // Create smooth gradient from red (0°) → yellow (60°) → green (120°)
+    // Use HSL color space for smooth interpolation
+    // Map score 0-10 to hue 0-120
+    final double hue = (score / 9) * 120.0; // 0° (red) to 120° (green)
+    
+    // Saturation: high for vivid colors
+    const double saturation = 0.75;
+    
+    // Lightness: slightly varied for better distinction
+    // Start at 0.50 (red), peak at 0.55 (yellow), end at 0.45 (green)
+    final double lightness = 0.50 + (score < 5 ? score * 0.01 : (9 - score) * 0.01);
+    
+    return HSLColor.fromAHSL(1.0, hue, saturation, lightness).toColor();
+  }
+  
+  // Helper to get progress score (0-10) from percentage
+  static int getProgressScore(double percentage) {
+    if (percentage == 100.0) return 10;
+    return (percentage / 10).floor().clamp(0, 9);
   }
 
   // Category icon mapping
