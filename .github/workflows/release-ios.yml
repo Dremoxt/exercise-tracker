@@ -1,0 +1,158 @@
+# Builds the iOS app on a macOS runner and uploads it to App Store Connect
+# (TestFlight / App Store) using an App Store Connect API key.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# PREREQUISITES (this workflow stays dormant until these are done)
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. Generate the iOS platform files on a Mac and commit them:
+#        flutter create --platforms=ios .
+#    Then set the bundle identifier (IOS_BUNDLE_ID below) and configure
+#    automatic/manual signing once in Xcode. Commit ios/Runner.xcodeproj etc.
+# 2. In Apple Developer, create an App ID + a distribution provisioning profile
+#    and a distribution signing certificate.
+# 3. In App Store Connect, create the app record and an API key
+#    (Users and Access → Integrations → App Store Connect API).
+# 4. Add the repository secrets listed below (Settings → Secrets → Actions).
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# REQUIRED SECRETS
+# ─────────────────────────────────────────────────────────────────────────────
+#   Signing:
+#     IOS_DIST_CERT_P12_BASE64        base64 of your distribution .p12
+#     IOS_DIST_CERT_PASSWORD          password for that .p12
+#     IOS_PROVISIONING_PROFILE_BASE64 base64 of the .mobileprovision
+#     KEYCHAIN_PASSWORD               any string, used for the temp keychain
+#     IOS_TEAM_ID                     10-char Apple Developer Team ID
+#     IOS_BUNDLE_ID                   e.g. com.yourcompany.movenow
+#   App Store Connect API key:
+#     APPSTORE_API_KEY_ID             the key ID (e.g. ABC123DEF4)
+#     APPSTORE_API_ISSUER_ID          the issuer UUID
+#     APPSTORE_API_PRIVATE_KEY_BASE64 base64 of the AuthKey_XXXX.p8 file
+#   Firebase (production config, mirrors deploy-qa.yml):
+#     PROD_FIREBASE_API_KEY, PROD_FIREBASE_AUTH_DOMAIN, PROD_FIREBASE_PROJECT_ID,
+#     PROD_FIREBASE_STORAGE_BUCKET, PROD_FIREBASE_MESSAGING_SENDER_ID,
+#     PROD_FIREBASE_APP_ID
+#
+# To generate a base64 secret on macOS:  base64 -i file.p12 | pbcopy
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Release iOS to App Store
+
+on:
+  # Manual cut from the Actions tab.
+  workflow_dispatch:
+  # Also cut automatically when a version tag is pushed, e.g. v1.0.1.
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-upload:
+    runs-on: macos-14
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Fail early with a clear message if the iOS project has not been
+      # generated yet (see PREREQUISITES above), instead of a cryptic build error.
+      - name: Verify iOS project exists
+        run: |
+          if [ ! -d "ios/Runner.xcodeproj" ] && [ ! -d "ios/Runner.xcworkspace" ]; then
+            echo "::error::No iOS Xcode project found under ios/. Run 'flutter create --platforms=ios .' on a Mac, configure signing, and commit it before using this workflow."
+            exit 1
+          fi
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.0'
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Import signing certificate
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          p12-password: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+      - name: Install provisioning profile
+        env:
+          PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "$PROFILE_BASE64" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/dist.mobileprovision"
+
+      - name: Install App Store Connect API key
+        env:
+          API_KEY_BASE64: ${{ secrets.APPSTORE_API_PRIVATE_KEY_BASE64 }}
+          API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+        run: |
+          mkdir -p "$HOME/.appstoreconnect/private_keys"
+          echo "$API_KEY_BASE64" | base64 --decode > "$HOME/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8"
+
+      - name: Create ExportOptions.plist
+        env:
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          cat > ios/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>${TEAM_ID}</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Build signed IPA
+        env:
+          FIREBASE_API_KEY: ${{ secrets.PROD_FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.PROD_FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID: ${{ secrets.PROD_FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.PROD_FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.PROD_FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID: ${{ secrets.PROD_FIREBASE_APP_ID }}
+        run: |
+          flutter build ipa --release \
+            --export-options-plist=ios/ExportOptions.plist \
+            --dart-define=ENV=production \
+            --dart-define=FIREBASE_API_KEY=$FIREBASE_API_KEY \
+            --dart-define=FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN \
+            --dart-define=FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID \
+            --dart-define=FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET \
+            --dart-define=FIREBASE_MESSAGING_SENDER_ID=$FIREBASE_MESSAGING_SENDER_ID \
+            --dart-define=FIREBASE_APP_ID=$FIREBASE_APP_ID
+
+      - name: Upload to App Store Connect
+        env:
+          API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+        run: |
+          IPA_PATH="$(ls build/ios/ipa/*.ipa | head -n 1)"
+          echo "Uploading $IPA_PATH"
+          xcrun altool --upload-app --type ios \
+            --file "$IPA_PATH" \
+            --apiKey "$API_KEY_ID" \
+            --apiIssuer "$API_ISSUER_ID"
+
+      - name: Upload IPA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-ipa
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: ignore
